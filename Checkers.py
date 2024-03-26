@@ -49,3 +49,43 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# Implementing the Logic
+def on_canvas_click(event):
+    global selected_piece, player_turn
+    col = event.x // 80
+    row = event.y // 80
+    if selected_piece:
+        # Attempt to move the selected piece to the clicked square
+        if validate_move(selected_piece, (row, col)):
+            move_piece(selected_piece, (row, col))
+            selected_piece = None
+            # Switch turns - placeholder for now
+            player_turn = "green" if player_turn == "red" else "red"
+    else:
+        # Select a piece
+        if is_piece_at_position((row, col)) and is_players_piece(player_turn, (row, col)):
+            selected_piece = (row, col)
+
+def validate_move(from_pos, to_pos):
+    # Placeholder for move validation logic
+    # Check if the move is diagonal, within range, and if capture is possible/required
+    return True
+
+def move_piece(from_pos, to_pos):
+    # Update the board state to move the selected piece to the new square
+    # This includes removing the piece from its original location and drawing it at the new location
+    pass
+
+def is_piece_at_position(pos):
+    # Check if there is a piece at the given board position
+    return True
+
+def is_players_piece(player, pos):
+    # Check if the piece at the given position belongs to the current player
+    return True
+
+# Add event binding to the canvas
+canvas.bind("<Button-1>", on_canvas_click)
+
