@@ -58,8 +58,36 @@ def switch_turns():
 
 
 def find_possible_moves(pos):
-    # Placeholder: Implement logic to find and return possible moves
-    return []
+    global board, player_turn
+    row, col = pos
+    moves = []
+    directions = [(-1, -1), (-1, 1)]  # Diagonal forward directions for regular pieces
+
+    piece = board[row][col]
+    if piece.endswith("K"):  # If the piece is a king, add backward directions
+        directions += [(1, -1), (1, 1)]
+
+    for dr, dc in directions:
+        new_row, new_col = row + dr, col + dc
+
+        # Check for standard moves (move to empty square)
+        if is_valid_position(new_row, new_col) and board[new_row][new_col] is None:
+            moves.append((new_row, new_col))
+
+        # Check for captures (jump over an opponent's piece)
+        elif is_valid_position(new_row, new_col) and board[new_row][new_col] and board[new_row][new_col][
+            0].lower() != player_turn.lower():
+            # Position after the capture
+            jump_row, jump_col = new_row + dr, new_col + dc
+            if is_valid_position(jump_row, jump_col) and board[jump_row][jump_col] is None:
+                moves.append((jump_row, jump_col))
+
+    return moves
+
+
+def is_valid_position(row, col):
+    """Check if the given position is on the board."""
+    return 0 <= row < 8 and 0 <= col < 8
 
 
 def highlight_moves(moves):
