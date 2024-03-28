@@ -36,16 +36,32 @@ def on_canvas_click(event):
     global selected_piece, player_turn, possible_moves
     col, row = event.x // 80, event.y // 80  # Convert click position to board coordinates
 
+    # First, check if any captures are available for the current player
+    captures_available = any_captures_available(player_turn)
+
     if (row, col) in possible_moves:  # If a valid move is selected
-        move_piece(selected_piece, (row, col))  # Move the piece
-        draw_board()  # Redraw the board with the new state
-        selected_piece = None  # Deselect the piece
-        possible_moves = []  # Clear possible moves
-        switch_turns()  # Switch turns after a successful move
+        if captures_available and abs(selected_piece[0] - row) == 2:  # Enforce capture moves
+            move_piece(selected_piece, (row, col))  # Move the piece
+            draw_board()  # Redraw the board with the new state
+            selected_piece = None  # Deselect the piece
+            possible_moves = []  # Clear possible moves
+            # Check if additional captures are available after moving
+            if not any_captures_available(player_turn) or not find_possible_moves((row, col)):
+                switch_turns()  # Switch turns if no further captures
+        elif not captures_available:
+            move_piece(selected_piece, (row, col))  # Move the piece if no captures are required
+            draw_board()
+            selected_piece = None
+            possible_moves = []
+            switch_turns()
     elif board[row][col] and board[row][col][0].lower() == player_turn.lower():
-        selected_piece = (row, col)  # Select the piece
-        possible_moves = find_possible_moves(selected_piece)  # Find possible moves for the selected piece
-        highlight_moves(possible_moves)  # Highlight possible moves
+        # Allow selecting another piece only if it can capture when captures are mandatory
+        if not captures_available or any(
+                (new_row, new_col) != (row, col) for new_row, new_col in find_possible_moves((row, col)) if
+                abs(row - new_row) == 2):
+            selected_piece = (row, col)  # Select the piece
+            possible_moves = find_possible_moves(selected_piece)  # Find possible moves for the selected piece
+            highlight_moves(possible_moves)  # Highlight possible moves
     else:
         selected_piece = None  # Deselect if clicked outside
         possible_moves = []
