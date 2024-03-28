@@ -60,29 +60,29 @@ def switch_turns():
 def find_possible_moves(pos):
     global board, player_turn
     row, col = pos
-    moves = []
+    captures = []  # Store capture moves
+    standard_moves = []  # Store standard moves
     directions = [(-1, -1), (-1, 1)]  # Diagonal forward directions for regular pieces
 
     piece = board[row][col]
-    if piece.endswith("K"):  # If the piece is a king, add backward directions
+    if piece and piece.endswith("K"):  # If the piece is a king, add backward directions
         directions += [(1, -1), (1, 1)]
 
     for dr, dc in directions:
         new_row, new_col = row + dr, col + dc
+        # Position after the capture
+        jump_row, jump_col = new_row + dr, new_col + dc
 
-        # Check for standard moves (move to empty square)
-        if is_valid_position(new_row, new_col) and board[new_row][new_col] is None:
-            moves.append((new_row, new_col))
+        # Check for captures first
+        if is_valid_position(new_row, new_col) and board[new_row][new_col] \
+           and board[new_row][new_col][0].lower() != player_turn.lower() \
+           and is_valid_position(jump_row, jump_col) and board[jump_row][jump_col] is None:
+            captures.append((jump_row, jump_col))
+        elif is_valid_position(new_row, new_col) and board[new_row][new_col] is None:
+            standard_moves.append((new_row, new_col))
 
-        # Check for captures (jump over an opponent's piece)
-        elif is_valid_position(new_row, new_col) and board[new_row][new_col] and board[new_row][new_col][
-            0].lower() != player_turn.lower():
-            # Position after the capture
-            jump_row, jump_col = new_row + dr, new_col + dc
-            if is_valid_position(jump_row, jump_col) and board[jump_row][jump_col] is None:
-                moves.append((jump_row, jump_col))
-
-    return moves
+    # Prioritize captures if available, otherwise return standard moves
+    return captures if captures else standard_moves
 
 
 def is_valid_position(row, col):
@@ -91,13 +91,35 @@ def is_valid_position(row, col):
 
 
 def highlight_moves(moves):
-    # Placeholder: Implement logic to visually highlight possible moves on the board
-    pass
+    for move in moves:
+        row, col = move
+        x1, y1 = col * 80, row * 80
+        canvas.create_oval(x1 + 35, y1 + 35, x1 + 45, y1 + 45, fill='yellow', tags='highlight')
+
 
 
 def move_piece(from_pos, to_pos):
-    # Implement the logic to move the piece and handle captures and king promotion
-    pass
+    global board, player_turn
+    row_from, col_from = from_pos
+    row_to, col_to = to_pos
+
+    # Move the piece
+    board[row_to][col_to] = board[row_from][col_from]
+    board[row_from][col_from] = None
+
+    # Handle capture
+    if abs(row_to - row_from) == 2 and abs(col_to - col_from) == 2:
+        mid_row, mid_col = (row_from + row_to) // 2, (col_from + col_to) // 2
+        board[mid_row][mid_col] = None  # Remove the captured piece
+
+    # Promote to king if the piece reaches the opposite side
+    if (player_turn == "R" and row_to == 7) or (player_turn == "G" and row_to == 0):
+        board[row_to][col_to] += "K"  # Append "K" to indicate a King
+
+    # Clear any move highlights
+    canvas.delete('highlight')
+
+    # Additional logic can be added here if needed xxxxxxxxxxx
 
 
 # Setup the game window and canvas
