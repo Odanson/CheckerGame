@@ -5,6 +5,7 @@ board = [[None for _ in range(8)] for _ in range(8)]  # 8x8 board
 player_turn = "R"  # Red starts
 selected_piece = None  # No piece selected initially
 possible_moves = []  # To track valid moves for the selected piece
+move_history = []  # To track the history of moves for undo functionality
 
 def initialize_board():
     """Initialize the game board with pieces for both players."""
@@ -16,6 +17,7 @@ def initialize_board():
         for col in range(8):
             if (row + col) % 2 != 0:
                 board[row][col] = "G"  # Initialize green pieces
+    update_turn_label()
 
 def draw_board():
     """Clears and redraws the entire board and pieces based on the current game state."""
@@ -31,47 +33,41 @@ def draw_board():
                 color = "red" if piece == "R" else "green"
                 canvas.create_oval(x1 + 10, y1 + 10, x2 - 10, y2 - 10, fill=color)
 
-
 def on_canvas_click(event):
     global selected_piece, player_turn, possible_moves
     col, row = event.x // 80, event.y // 80  # Convert click position to board coordinates
 
-    # First, check if any captures are available for the current player
-    captures_available = any_captures_available(player_turn)
-
-    if (row, col) in possible_moves:  # If a valid move is selected
-        if captures_available and abs(selected_piece[0] - row) == 2:  # Enforce capture moves
-            move_piece(selected_piece, (row, col))  # Move the piece
-            draw_board()  # Redraw the board with the new state
-            selected_piece = None  # Deselect the piece
-            possible_moves = []  # Clear possible moves
-            # Check if additional captures are available after moving
-            if not any_captures_available(player_turn) or not find_possible_moves((row, col)):
-                switch_turns()  # Switch turns if no further captures
-        elif not captures_available:
-            move_piece(selected_piece, (row, col))  # Move the piece if no captures are required
-            draw_board()
+    # Handle case where a selected piece is making a continued capture
+    if selected_piece and (row, col) in possible_moves:
+        move_piece(selected_piece, (row, col))  # Execute the move
+        draw_board()
+        # After moving, check if there are further captures available from the new position
+        if any(abs(row - r) == 2 for r, _ in find_possible_moves((row, col))):
+            # If more captures are available, update the possible moves and keep the piece selected
+            possible_moves = find_possible_moves((row, col))
+            selected_piece = (row, col)  # Update the selected piece to its new position
+            highlight_moves(possible_moves)
+        else:
+            # If no further captures are available, deselect the piece and clear possible moves
             selected_piece = None
             possible_moves = []
             switch_turns()
-    elif board[row][col] and board[row][col][0].lower() == player_turn.lower():
-        # Allow selecting another piece only if it can capture when captures are mandatory
-        if not captures_available or any(
-                (new_row, new_col) != (row, col) for new_row, new_col in find_possible_moves((row, col)) if
-                abs(row - new_row) == 2):
-            selected_piece = (row, col)  # Select the piece
-            possible_moves = find_possible_moves(selected_piece)  # Find possible moves for the selected piece
-            highlight_moves(possible_moves)  # Highlight possible moves
+        return  # Exit the function to avoid re-selecting or deselecting the piece
+
+    # Normal piece selection logic
+    if board[row][col] and board[row][col][0].lower() == player_turn.lower():
+        selected_piece = (row, col)  # Select the piece
+        possible_moves = find_possible_moves(selected_piece)  # Find possible moves for the selected piece
+        highlight_moves(possible_moves)  # Highlight possible moves
     else:
         selected_piece = None  # Deselect if clicked outside
         possible_moves = []
         draw_board()  # Redraw to remove highlights
 
-
 def switch_turns():
     global player_turn
     player_turn = "G" if player_turn == "R" else "R"  # Toggle player turn
-
+    update_turn_label()
 
 def find_possible_moves(pos):
     global board, player_turn
@@ -100,43 +96,121 @@ def find_possible_moves(pos):
     # Prioritize captures if available, otherwise return standard moves
     return captures if captures else standard_moves
 
-
 def is_valid_position(row, col):
     """Check if the given position is on the board."""
     return 0 <= row < 8 and 0 <= col < 8
-
 
 def highlight_moves(moves):
     for move in moves:
         row, col = move
         x1, y1 = col * 80, row * 80
-        canvas.create_oval(x1 + 35, y1 + 35, x1 + 45, y1 + 45, fill='yellow', tags='highlight')
+        is_capture = selected_piece and abs(selected_piece[0] - row) == 2
+        color = 'orange' if is_capture else 'yellow'  # Use a different color for captures
+        canvas.create_oval(x1 + 35, y1 + 35, x1 + 45, y1 + 45, fill=color, tags='highlight')
 
+def check_for_victory():
+    """Check the board state for a victory condition and display the result."""
+    if not player_has_pieces('R'):
+        display_victory('Green wins!')
+    elif not player_has_pieces('G'):
+        display_victory('Red wins!')
+    elif not player_has_moves('R') or not player_has_moves('G'):
+        display_victory('Draw!')
 
+def player_has_pieces(player):
+    """Check if a player has any pieces left."""
+    return any(piece is not None and piece.startswith(player) for row in board for piece in row)
+
+def player_has_moves(player):
+    """Check if a player has any legal moves left."""
+    return any(find_possible_moves((row, col)) for row in range(8) for col in range(8) if board[row][col] and board[row][col].startswith(player))
+
+def display_victory(message):
+    """Display the end game message and disable further moves."""
+    victory_label.config(text=message)
+    canvas.unbind("<Button-1>")  # Disable further moves
+
+def play_again():
+    """Reset the game to its initial state and re-enable interactions."""
+    reset_game()
+    canvas.bind("<Button-1>", on_canvas_click)
+    victory_label.config(text="")
 
 def move_piece(from_pos, to_pos):
     global board, player_turn
     row_from, col_from = from_pos
     row_to, col_to = to_pos
 
-    # Move the piece
+    save_state()  # Save the current state before making changes
+
+    # Proceed with the existing move and capture logic
     board[row_to][col_to] = board[row_from][col_from]
     board[row_from][col_from] = None
-
-    # Handle capture
-    if abs(row_to - row_from) == 2 and abs(col_to - col_from) == 2:
+    if abs(row_to - row_from) == 2:  # Capture made
         mid_row, mid_col = (row_from + row_to) // 2, (col_from + col_to) // 2
-        board[mid_row][mid_col] = None  # Remove the captured piece
+        board[mid_row][mid_col] = None  # Remove captured piece
 
-    # Promote to king if the piece reaches the opposite side
+    # Promote to king if applicable
     if (player_turn == "R" and row_to == 7) or (player_turn == "G" and row_to == 0):
-        board[row_to][col_to] += "K"  # Append "K" to indicate a King
+        board[row_to][col_to] = board[row_to][col_to] + "K"
 
-    # Clear any move highlights
-    canvas.delete('highlight')
+    canvas.delete('highlight')  # Clear highlights
 
-    # Additional logic can be added here if needed xxxxxxxxxxx
+    # After moving, check for further captures from the new position
+    further_captures = find_possible_moves((row_to, col_to))
+    # Check if there are captures and they are indeed captures by distance
+    if any(abs(row_to - row) == 2 for (row, _) in further_captures):
+        # If further captures are available, set up for another capture
+        global selected_piece, possible_moves
+        selected_piece = (row_to, col_to)
+        possible_moves = further_captures
+        highlight_moves(possible_moves)
+    else:
+        # If no further captures, switch turns
+        switch_turns()
+        check_for_victory()
 
+
+def save_state():
+    """Saves the current game state."""
+    global move_history
+    state = ([row[:] for row in board], player_turn)
+    move_history.append(state)
+
+def undo_move():
+    """Reverts the board to the previous state."""
+    global board, player_turn
+    if move_history:
+        move_history.pop()  # Remove the current state
+        if move_history:
+            board, player_turn = move_history.pop()
+            draw_board()
+            update_turn_label()
+        else:
+            print("No more moves to undo.")
+    else:
+        print("No moves have been made yet.")
+
+def reset_game():
+    """Resets the game to its initial state."""
+    global board, move_history, player_turn, selected_piece, possible_moves
+    board = [[None for _ in range(8)] for _ in range(8)]
+    player_turn = "R"
+    selected_piece = None
+    possible_moves = []
+    move_history = []
+    initialize_board()
+    draw_board()
+
+def update_turn_label():
+    """Updates the turn label to display the current player's turn."""
+    turn_text = "Red's Turn" if player_turn == "R" else "Green's Turn"
+    turn_label.config(text=turn_text)
+
+def update_turn_label():
+    """Updates the turn label to display the current player's turn."""
+    turn_text = "Red's Turn" if player_turn == "R" else "Green's Turn"
+    turn_label.config(text=turn_text)
 
 # Setup the game window and canvas
 root = tk.Tk()
@@ -145,8 +219,26 @@ canvas = tk.Canvas(root, width=640, height=640)
 canvas.pack()
 canvas.bind("<Button-1>", on_canvas_click)
 
-# Initialize the board and draw the initial setup
-initialize_board()
-draw_board()
+# Define turn label before initializing the board or drawing the initial setup
+turn_label = tk.Label(root, text="", font=('Helvetica', 16))
+turn_label.pack()
+
+# Now that turn_label is defined, you can initialize the board
+initialize_board()  # This function now can safely call update_turn_label
+
+# Add undo/reset buttons after the board has been initialized
+undo_button = tk.Button(root, text="Undo Move", command=undo_move)
+undo_button.pack()
+
+reset_button = tk.Button(root, text="Reset Game", command=reset_game)
+reset_button.pack()
+
+# Display victory status
+victory_label = tk.Label(root, text="", font=('Helvetica', 16))
+victory_label.pack()
+
+# Play again button (you can choose to only show it after the game is over or always visible)
+play_again_button = tk.Button(root, text="Play Again", command=play_again)
+play_again_button.pack()
 
 root.mainloop()
