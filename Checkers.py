@@ -46,32 +46,37 @@ def on_canvas_click(event):
     global selected_piece, player_turn, possible_moves
     col, row = event.x // 80, event.y // 80  # Convert click position to board coordinates
 
+    # First, clear any existing highlights whenever a click is registered
+    draw_board()
+
     # Handle case where a selected piece is making a continued capture
     if selected_piece and (row, col) in possible_moves:
         move_piece(selected_piece, (row, col))  # Execute the move
-        draw_board()
         # After moving, check if there are further captures available from the new position
         if any(abs(row - r) == 2 for r, _ in find_possible_moves((row, col))):
-            # If more captures are available, update the possible moves and keep the piece selected
+            # If more captures are available, keep the piece selected and highlight new possible moves
             possible_moves = find_possible_moves((row, col))
-            selected_piece = (row, col)  # Update the selected piece to its new position
-            highlight_moves(possible_moves)
+            selected_piece = (row, col)
         else:
             # If no further captures are available, deselect the piece and clear possible moves
             selected_piece = None
             possible_moves = []
             switch_turns()
-        return  # Exit the function to avoid re-selecting or deselecting the piece
-
-    # Normal piece selection logic
-    if board[row][col] and board[row][col][0].lower() == player_turn.lower():
-        selected_piece = (row, col)  # Select the piece
-        possible_moves = find_possible_moves(selected_piece)  # Find possible moves for the selected piece
-        highlight_moves(possible_moves)  # Highlight possible moves
+    elif board[row][col] and board[row][col][0].lower() == player_turn.lower():
+        # A new piece is selected
+        selected_piece = (row, col)
+        possible_moves = find_possible_moves(selected_piece)
     else:
-        selected_piece = None  # Deselect if clicked outside
+        # Deselect if clicked outside
+        selected_piece = None
         possible_moves = []
-        draw_board()  # Redraw to remove highlights
+
+    # Update the highlights based on the new state
+    if selected_piece:
+        # Highlight the selected piece and possible moves
+        highlight_selected_piece(selected_piece)
+        highlight_moves(possible_moves)
+
 
 def switch_turns():
     global player_turn
@@ -254,6 +259,16 @@ def highlight_selected_piece(pos):
     if piece_id:
         # Change the outline to a bright color to indicate selection
         canvas.itemconfig(piece_id, outline="blue", width=2)
+
+def highlight_moves(moves):
+    # Remove any existing highlights
+    canvas.delete("move_highlight")
+    for move in moves:
+        row, col = move
+        x1, y1 = col * 80, row * 80
+        # Draw a rectangle or dot for the highlight, added a tag for easy removal
+        canvas.create_oval(x1 + 30, y1 + 30, x1 + 50, y1 + 50, fill='yellow', tags=("move_highlight",))
+
 
 
 # Setup the game window and canvas
