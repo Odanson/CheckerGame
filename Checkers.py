@@ -7,6 +7,9 @@ player_turn = "R"  # Red starts
 selected_piece = None  # No piece selected initially
 possible_moves = []  # To track valid moves for the selected piece
 move_history = []  # To track the history of moves for undo functionality
+piece_ids = {}  # To store canvas item IDs for each piece
+drag_data = {}  # To track information about drag operations
+
 
 def initialize_board():
     """Initialize the game board with pieces for both players."""
@@ -20,8 +23,6 @@ def initialize_board():
                 board[row][col] = "G"  # Initialize green pieces
     update_turn_label()
 
-# Global dictionary to hold the canvas item IDs
-piece_ids = {}
 
 def draw_board():
     """Clears and redraws the entire board and pieces based on the current game state."""
@@ -110,9 +111,11 @@ def find_possible_moves(pos):
     # Prioritize captures if available, otherwise return standard moves
     return captures if captures else standard_moves
 
+
 def is_valid_position(row, col):
     """Check if the given position is on the board."""
     return 0 <= row < 8 and 0 <= col < 8
+
 
 def highlight_moves(moves):
     for move in moves:
@@ -121,6 +124,7 @@ def highlight_moves(moves):
         is_capture = selected_piece and abs(selected_piece[0] - row) == 2
         color = 'orange' if is_capture else 'yellow'  # Use a different color for captures
         canvas.create_oval(x1 + 35, y1 + 35, x1 + 45, y1 + 45, fill=color, tags='highlight')
+
 
 def check_for_victory():
     """Check the board state for a victory condition and display the result."""
@@ -131,24 +135,29 @@ def check_for_victory():
     elif not player_has_moves('R') or not player_has_moves('G'):
         display_victory('Draw!')
 
+
 def player_has_pieces(player):
     """Check if a player has any pieces left."""
     return any(piece is not None and piece.startswith(player) for row in board for piece in row)
 
+
 def player_has_moves(player):
     """Check if a player has any legal moves left."""
     return any(find_possible_moves((row, col)) for row in range(8) for col in range(8) if board[row][col] and board[row][col].startswith(player))
+
 
 def display_victory(message):
     """Display the end game message and disable further moves."""
     victory_label.config(text=message)
     canvas.unbind("<Button-1>")  # Disable further moves
 
+
 def play_again():
     """Reset the game to its initial state and re-enable interactions."""
     reset_game()
     canvas.bind("<Button-1>", on_canvas_click)
     victory_label.config(text="")
+
 
 def move_piece(from_pos, to_pos):
     global board, player_turn, piece_ids
@@ -204,6 +213,7 @@ def save_state():
     state = ([row[:] for row in board], player_turn)
     move_history.append(state)
 
+
 def undo_move():
     """Reverts the board to the previous state."""
     global board, player_turn
@@ -218,6 +228,7 @@ def undo_move():
     else:
         print("No moves have been made yet.")
 
+
 def reset_game():
     """Resets the game to its initial state."""
     global board, move_history, player_turn, selected_piece, possible_moves
@@ -229,10 +240,12 @@ def reset_game():
     initialize_board()
     draw_board()
 
+
 def update_turn_label():
     """Updates the turn label to display the current player's turn."""
     turn_text = "Red's Turn" if player_turn == "R" else "Green's Turn"
     turn_label.config(text=turn_text)
+
 
 def animate_move(from_pos, to_pos, piece_id):
     """Animate the movement of a piece from from_pos to to_pos."""
@@ -253,12 +266,14 @@ def animate_move(from_pos, to_pos, piece_id):
         canvas.update()
         time.sleep(0.02)  # Adjust for smoother or faster animation
 
+
 def highlight_selected_piece(pos):
     row, col = pos
     piece_id = piece_ids.get(pos)
     if piece_id:
         # Change the outline to a bright color to indicate selection
-        canvas.itemconfig(piece_id, outline="blue", width=2)
+        canvas.itemconfig(piece_id, outline="blue", width=3)
+
 
 def highlight_moves(moves):
     # Remove any existing highlights
@@ -270,20 +285,58 @@ def highlight_moves(moves):
         canvas.create_oval(x1 + 30, y1 + 30, x1 + 50, y1 + 50, fill='yellow', tags=("move_highlight",))
 
 
+def on_mouse_down(event):
+    global selected_piece, drag_data
+    col, row = event.x // 80, event.y // 80
 
-# Setup the game window and canvas
+    if board[row][col] and board[row][col][0].lower() == player_turn.lower():
+        selected_piece = (row, col)
+        drag_data = {"x": event.x, "y": event.y, "item": piece_ids[selected_piece]}
+        canvas.bind("<B1-Motion>", on_mouse_move)
+        canvas.bind("<ButtonRelease-1>", on_mouse_up)
+    else:
+        selected_piece = None
+
+
+def on_mouse_move(event):
+    global drag_data
+    delta_x = event.x - drag_data["x"]
+    delta_y = event.y - drag_data["y"]
+    canvas.move(drag_data["item"], delta_x, delta_y)
+    drag_data["x"] = event.x
+    drag_data["y"] = event.y
+
+
+def on_mouse_up(event):
+    global selected_piece, possible_moves
+    canvas.unbind("<B1-Motion>")
+    canvas.unbind("<ButtonRelease-1>")
+
+    # Calculate the new position based on the release point
+    col, row = event.x // 80, event.y // 80
+    move_pos = (row, col)
+
+    # Check if the move is valid before finalizing
+    if move_pos in possible_moves:
+        move_piece(selected_piece, move_pos)
+    else:
+        # If the move is invalid, return the piece to its original position
+        draw_board()
+
+    selected_piece = None
+    possible_moves = []
+    draw_board()
+
+
+# Set up the game window and canvas
 root = tk.Tk()
 root.title("Checkers")
 canvas = tk.Canvas(root, width=640, height=640)
 canvas.pack()
-canvas.bind("<Button-1>", on_canvas_click)
 
 # Define turn label before initializing the board or drawing the initial setup
 turn_label = tk.Label(root, text="", font=('Helvetica', 16))
 turn_label.pack()
-
-# Now that turn_label is defined, you can initialize the board
-initialize_board()  # This function now can safely call update_turn_label
 
 # Add undo/reset buttons after the board has been initialized
 undo_button = tk.Button(root, text="Undo Move", command=undo_move)
@@ -299,5 +352,12 @@ victory_label.pack()
 # Play again button (you can choose to only show it after the game is over or always visible)
 play_again_button = tk.Button(root, text="Play Again", command=play_again)
 play_again_button.pack()
+
+# Initialize the board
+initialize_board()  # Ensure this function does not rely on uninitialized functions or variables.
+
+# Event bindings for drag-and-drop functionality
+canvas.bind("<Button-1>", on_mouse_down)
+# Ensure on_mouse_down binds additional events for mouse movement and release as needed.
 
 root.mainloop()
