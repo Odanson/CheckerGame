@@ -20,9 +20,14 @@ def initialize_board():
                 board[row][col] = "G"  # Initialize green pieces
     update_turn_label()
 
+# Global dictionary to hold the canvas item IDs
+piece_ids = {}
+
 def draw_board():
     """Clears and redraws the entire board and pieces based on the current game state."""
+    global piece_ids
     canvas.delete("all")  # Clear the canvas
+    piece_ids.clear()  # Clear the old IDs
     for row in range(8):
         for col in range(8):
             x1, y1 = col * 80, row * 80
@@ -32,7 +37,10 @@ def draw_board():
             piece = board[row][col]
             if piece:
                 color = "red" if piece == "R" else "green"
-                canvas.create_oval(x1 + 10, y1 + 10, x2 - 10, y2 - 10, fill=color)
+                # Create the piece and store its ID in the piece_ids dictionary
+                piece_id = canvas.create_oval(x1 + 10, y1 + 10, x2 - 10, y2 - 10, fill=color)
+                piece_ids[(row, col)] = piece_id
+
 
 def on_canvas_click(event):
     global selected_piece, player_turn, possible_moves
@@ -138,44 +146,51 @@ def play_again():
     victory_label.config(text="")
 
 def move_piece(from_pos, to_pos):
-    global board, player_turn
+    global board, player_turn, piece_ids
     row_from, col_from = from_pos
     row_to, col_to = to_pos
 
-    # Retrieve the canvas ID of the piece to move
-    piece_id = canvas.find_closest(col_from * 80 + 40, row_from * 80 + 40)[0]
+    # Retrieve the canvas ID of the piece to move from the dictionary
+    piece_id = piece_ids.get(from_pos)
 
     save_state()  # Save the current state before making changes
 
-    # Animate the piece movement
-    animate_move(from_pos, to_pos, piece_id)
+    # Animate the piece movement if we have a valid piece ID
+    if piece_id:
+        animate_move(from_pos, to_pos, piece_id)
 
     # Proceed with the existing move and capture logic
     board[row_to][col_to] = board[row_from][col_from]
     board[row_from][col_from] = None
     if abs(row_to - row_from) == 2:  # Capture made
         mid_row, mid_col = (row_from + row_to) // 2, (col_from + col_to) // 2
-        board[mid_row][mid_col] = None  # Remove captured piece
+        # Remove the captured piece from the canvas and the piece_ids dictionary
+        captured_piece_id = piece_ids.pop((mid_row, mid_col), None)
+        if captured_piece_id:
+            canvas.delete(captured_piece_id)
+        board[mid_row][mid_col] = None
 
-    # Promote to king if applicable
+    # Promote to king if applicable and update the piece appearance if needed
     if (player_turn == "R" and row_to == 7) or (player_turn == "G" and row_to == 0):
-        board[row_to][col_to] = board[row_to][col_to] + "K"
+        board[row_to][col_to] += "K"
+        # If you change the appearance for kings, update the piece on the canvas here
 
     canvas.delete('highlight')  # Clear highlights
 
     # After moving, check for further captures from the new position
     further_captures = find_possible_moves((row_to, col_to))
-    # Check if there are captures and they are indeed captures by distance
     if any(abs(row_to - row) == 2 for (row, _) in further_captures):
-        # If further captures are available, set up for another capture
-        global selected_piece, possible_moves
         selected_piece = (row_to, col_to)
         possible_moves = further_captures
         highlight_moves(possible_moves)
     else:
-        # If no further captures, switch turns
         switch_turns()
         check_for_victory()
+
+    # Update the piece_ids dictionary for the new position
+    piece_ids[to_pos] = piece_id
+    if from_pos in piece_ids:
+        del piece_ids[from_pos]
 
 
 def save_state():
@@ -221,6 +236,7 @@ def update_turn_label():
 
 def animate_move(from_pos, to_pos, piece_id):
     """Animate the movement of a piece from from_pos to to_pos."""
+    piece_id = piece_ids.get(from_pos)
     from_x, from_y = from_pos[1] * 80, from_pos[0] * 80
     to_x, to_y = to_pos[1] * 80, to_pos[0] * 80
 
