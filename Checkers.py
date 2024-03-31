@@ -105,12 +105,6 @@ def find_possible_moves(pos):
     # Prioritize captures if available, otherwise return standard moves
     return captures if captures else standard_moves
 
-def animate_move(from_pos, to_pos, piece_id):
-    """Animate the movement of a piece from from_pos to to_pos."""
-    piece_id = piece_ids.get(from_pos)
-    from_x, from_y = from_pos[1] * 80, from_pos[0] * 80
-    to_x, to_y = to_pos[1] * 80, to_pos[0] * 80
-
 def is_valid_position(row, col):
     """Check if the given position is on the board."""
     return 0 <= row < 8 and 0 <= col < 8
@@ -253,6 +247,13 @@ def animate_move(from_pos, to_pos, piece_id):
         canvas.move(piece_id, x_step, y_step)
         canvas.update()
         time.sleep(0.02)  # Adjust for smoother or faster animation
+
+def highlight_selected_piece(pos):
+    row, col = pos
+    piece_id = piece_ids.get(pos)
+    if piece_id:
+        # Change the outline to a bright color to indicate selection
+        canvas.itemconfig(piece_id, outline="blue", width=2)
 
 
 # Setup the game window and canvas
