@@ -105,6 +105,12 @@ def find_possible_moves(pos):
     # Prioritize captures if available, otherwise return standard moves
     return captures if captures else standard_moves
 
+def animate_move(from_pos, to_pos, piece_id):
+    """Animate the movement of a piece from from_pos to to_pos."""
+    piece_id = piece_ids.get(from_pos)
+    from_x, from_y = from_pos[1] * 80, from_pos[0] * 80
+    to_x, to_y = to_pos[1] * 80, to_pos[0] * 80
+
 def is_valid_position(row, col):
     """Check if the given position is on the board."""
     return 0 <= row < 8 and 0 <= col < 8
@@ -229,16 +235,6 @@ def update_turn_label():
     turn_text = "Red's Turn" if player_turn == "R" else "Green's Turn"
     turn_label.config(text=turn_text)
 
-def update_turn_label():
-    """Updates the turn label to display the current player's turn."""
-    turn_text = "Red's Turn" if player_turn == "R" else "Green's Turn"
-    turn_label.config(text=turn_text)
-
-def animate_move(from_pos, to_pos, piece_id):
-    """Animate the movement of a piece from from_pos to to_pos."""
-    piece_id = piece_ids.get(from_pos)
-    from_x, from_y = from_pos[1] * 80, from_pos[0] * 80
-    to_x, to_y = to_pos[1] * 80, to_pos[0] * 80
 
     # Calculate the pixel distance to move
     x_distance = to_x - from_x
