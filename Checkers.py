@@ -235,20 +235,24 @@ def update_turn_label():
     turn_text = "Red's Turn" if player_turn == "R" else "Green's Turn"
     turn_label.config(text=turn_text)
 
+def animate_move(from_pos, to_pos, piece_id):
+    """Animate the movement of a piece from from_pos to to_pos."""
+    from_x, from_y = from_pos[1] * 80 + 40, from_pos[0] * 80 + 40  # Center of the square
+    to_x, to_y = to_pos[1] * 80 + 40, to_pos[0] * 80 + 40  # Center of the target square
 
     # Calculate the pixel distance to move
     x_distance = to_x - from_x
     y_distance = to_y - from_y
 
     # Calculate the number of steps for the animation
-    steps = 10
-    x_step = x_distance // steps
-    y_step = y_distance // steps
+    steps = 20
+    x_step = x_distance / steps
+    y_step = y_distance / steps
 
     for _ in range(steps):
         canvas.move(piece_id, x_step, y_step)
         canvas.update()
-        time.sleep(0.05)  #Pause for animation effect
+        time.sleep(0.02)  # Adjust for smoother or faster animation
 
 
 # Setup the game window and canvas
