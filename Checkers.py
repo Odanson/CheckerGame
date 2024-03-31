@@ -142,7 +142,13 @@ def move_piece(from_pos, to_pos):
     row_from, col_from = from_pos
     row_to, col_to = to_pos
 
+    # Retrieve the canvas ID of the piece to move
+    piece_id = canvas.find_closest(col_from * 80 + 40, row_from * 80 + 40)[0]
+
     save_state()  # Save the current state before making changes
+
+    # Animate the piece movement
+    animate_move(from_pos, to_pos, piece_id)
 
     # Proceed with the existing move and capture logic
     board[row_to][col_to] = board[row_from][col_from]
@@ -230,7 +236,7 @@ def animate_move(from_pos, to_pos, piece_id):
     for _ in range(steps):
         canvas.move(piece_id, x_step, y_step)
         canvas.update()
-        time.sleep(0.05)  # Pause for animation effect
+        time.sleep(0.05)  #Pause for animation effect
 
 
 # Setup the game window and canvas
