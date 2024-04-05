@@ -75,7 +75,7 @@ class BoardGUI():
                             self.tiles[i][j] = self.c.create_oval(j * self.col_width + 10, i * self.row_height + 10,
                                                                   (j + 1) * self.col_width - 10,
                                                                   (i + 1) * self.row_height - 10,
-                                                                  fill="black")
+                                                                  fill="green")
                         elif newBoard[i][j] > 0:
                             self.tiles[i][j] = self.c.create_oval(j * self.col_width + 10, i * self.row_height + 10,
                                                                   (j + 1) * self.col_width - 10,
@@ -118,7 +118,7 @@ class BoardGUI():
                 self.tiles[row][col] = self.c.create_oval(col * self.col_width + 10, row * self.row_height + 10,
                                                           (col + 1) * self.col_width - 10,
                                                           (row + 1) * self.row_height - 10,
-                                                          fill="green")
+                                                          fill="orange")
                 self.checkerSelected = True
 
             else:  # no checker at the clicked postion
