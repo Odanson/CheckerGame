@@ -41,11 +41,25 @@ class AIPlayer():
         return self.bestMove if self.bestMove else (-1, -1, -1, -1)  # Fallback if no move found
 
     # Hard AI, returns the best move found by alpha-beta search
+    # def getNextMoveHard(self):
+    #     state = AIGameState(self.game)
+    #     depthLimit = self.computeDepthLimit(state)
+    #     nextMove = self.alphaBetaSearch(state, depthLimit)
+    #     return nextMove[0], nextMove[1], nextMove[2], nextMove[3]
+
     def getNextMoveHard(self):
         state = AIGameState(self.game)
         depthLimit = self.computeDepthLimit(state)
-        nextMove = self.alphaBetaSearch(state, depthLimit)
-        return nextMove[0], nextMove[1], nextMove[2], nextMove[3]
+        alpha = -float('inf')
+        beta = float('inf')
+        maximizingPlayer = True
+        score, nextMove = self.alphaBetaSearch(state, depthLimit, alpha, beta, maximizingPlayer)
+        if nextMove is not None:
+            return nextMove  # This assumes that nextMove is a tuple like (oldrow, oldcol, row, col)
+        else:
+            # Handle the case where no move was found (should not occur if the game is not over)
+            # You might raise an exception, return a default value, or handle it in some other way
+            raise Exception("No valid move found")
 
     # Dynamically compute depth limit
     # Fewer checkers we have, deeper level we can search
@@ -53,26 +67,57 @@ class AIPlayer():
         numcheckers = len(state.AICheckers) + len(state.humanCheckers)
         return 26 - numcheckers
 
+    # def alphaBetaSearch(self, state, depth, alpha, beta, maximizingPlayer):
+    #     if depth == 0 or state.terminalTest():
+    #         return self.evaluateState(state)
+    #
+    #     if maximizingPlayer:
+    #         value = -float('inf')
+    #         for action in state.getActions(True):
+    #             value = max(value, self.alphaBetaSearch(state.result(action), depth - 1, alpha, beta, False))
+    #             alpha = max(alpha, value)
+    #             if alpha >= beta:
+    #                 break
+    #         return value
+    #     else:
+    #         value = float('inf')
+    #         for action in state.getActions(False):
+    #             value = min(value, self.alphaBetaSearch(state.result(action), depth - 1, alpha, beta, True))
+    #             beta = min(beta, value)
+    #             if alpha >= beta:
+    #                 break
+    #         return value
+
     def alphaBetaSearch(self, state, depth, alpha, beta, maximizingPlayer):
-        if depth == 0 or state.isTerminal():
-            return self.evaluateState(state)
+        if depth == 0 or state.terminalTest():
+            return (self.evaluateState(state),
+                    None)  # Return a tuple of score and the move (None for move because it's a terminal state)
+
+        best_move = None  # Initialize best move
 
         if maximizingPlayer:
             value = -float('inf')
-            for action in state.getActions(True):
-                value = max(value, self.alphaBetaSearch(state.result(action), depth - 1, alpha, beta, False))
+            for action in state.getActions(maximizingPlayer):
+                new_state = state.result(action)
+                score, _ = self.alphaBetaSearch(new_state, depth - 1, alpha, beta, not maximizingPlayer)
+                if score > value:
+                    value, best_move = score, action  # Keep track of the best score and best move
                 alpha = max(alpha, value)
                 if alpha >= beta:
-                    break
-            return value
-        else:
+                    break  # Beta cut-off
+            return (value, best_move)  # Return the score along with the best move for this branch
+
+        else:  # Minimizing player
             value = float('inf')
-            for action in state.getActions(False):
-                value = min(value, self.alphaBetaSearch(state.result(action), depth - 1, alpha, beta, True))
+            for action in state.getActions(maximizingPlayer):
+                new_state = state.result(action)
+                score, _ = self.alphaBetaSearch(new_state, depth - 1, alpha, beta, not maximizingPlayer)
+                if score < value:
+                    value, best_move = score, action  # Keep track of the best score and best move
                 beta = min(beta, value)
                 if alpha >= beta:
-                    break
-            return value
+                    break  # Alpha cut-off
+            return (value, best_move)  # Return the score along with the best move for this branch
 
     # For AI player (MAX)
     def maxValue(self, state, alpha, beta, depthLimit):
@@ -145,6 +190,13 @@ class AIPlayer():
 
         self.currentDepth -= 1
         return v
+
+    def evaluateState(self, state):
+        # Simple heuristic for demonstration: difference in the number of pieces
+        # More sophisticated heuristics can take into account piece positions, kings, etc.
+        ai_piece_count = len(state.AICheckers)
+        human_piece_count = len(state.humanCheckers)
+        return ai_piece_count - human_piece_count
 
 # a class for AI to simulate game state
 class AIGameState():
@@ -236,6 +288,14 @@ class AIGameState():
 
         return captureMoves if captureMoves else regularMoves
 
+    def result(self, action):
+        # Create a new game state as a deep copy of the current one
+        new_state = copy.deepcopy(self)
+        # Apply the action to the new game state
+        new_state.applyAction(action)
+        # Return the new game state
+        return new_state
+
     def applyAction(self, action):
         oldrow, oldcol, row, col = action
         captured = 0
@@ -280,6 +340,34 @@ class AIGameState():
             else:
                 self.AICheckers.add(-captured) # Ensure the added ID is positive for AI checkers
 
+    # def applyAction(self, action):
+    #     oldrow, oldcol, row, col = action
+    #     captured = 0
+    #
+    #     # Validate the move coordinates before proceeding
+    #     if not self.isValidMove(oldrow, oldcol, row, col, self.isPlayerTurn()):
+    #         return None  # Or raise an exception, or handle the error as appropriate
+    #
+    #     # Move the checker
+    #     toMove = self.board[oldrow][oldcol]
+    #     self.checkerPositions[toMove] = (row, col)
+    #     self.board[row][col] = toMove
+    #     self.board[oldrow][oldcol] = 0
+    #
+    #     # If a capture move, remove the captured checker
+    #     if abs(oldrow - row) == 2:
+    #         midrow, midcol = (oldrow + row) // 2, (oldcol + col) // 2
+    #         captured = self.board[midrow][midcol]
+    #         if captured != 0:  # Check that a checker is indeed captured
+    #             self.board[midrow][midcol] = 0
+    #             self.checkerPositions.pop(captured, None)
+    #             # Update the sets of checkers, ensure captured checker ID is handled correctly
+    #             if captured > 0:
+    #                 self.humanCheckers.discard(captured)  # Use discard to avoid KeyError if item is not found
+    #             elif captured < 0:
+    #                 self.AICheckers.discard(-captured)  # Make sure to discard the positive ID
+    #
+    #     return captured
     def printBoard(self):
         for row in self.board:
             print(' '.join(f'{item:>3}' for item in row))
