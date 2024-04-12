@@ -24,42 +24,29 @@ class AIPlayer():
         chosenMove = moves[index]
         return chosenMove[0], chosenMove[1], chosenMove[2], chosenMove[3]
 
-    # Hard AI, returns the move found by alpha-beta search with depth limit 5
-    # def getNextMoveMedium(self):
+    # Simple AI, returns a random legal move
+    # def getNextMoveEasy(self):
     #     state = AIGameState(self.game)
-    #     nextMove = self.alphaBetaSearch(state, 5)
-    #     return nextMove[0], nextMove[1], nextMove[2], nextMove[3]
+    #     moves = state.getActions(False)
+    #     if not moves:  # No moves available
+    #         print("No moves available for AI")
+    #         return None  # Return None or handle this scenario appropriately
+    #     index = random.randrange(len(moves))
+    #     chosenMove = moves[index]
+    #     return chosenMove[0], chosenMove[1], chosenMove[2], chosenMove[3]
 
-    # Assuming alphaBetaSearch is called like this somewhere in your class:
+    # Hard AI, returns the move found by alpha-beta search with depth limit 5
     def getNextMoveMedium(self):
         state = AIGameState(self.game)
-        # Initialize alpha and beta for the root call
-        alpha, beta = -float('inf'), float('inf')
-        self.bestMove = None  # To store the best move found
-        self.alphaBetaSearch(state, self.computeDepthLimit(state), alpha, beta, True)
-        # After search, bestMove should hold the optimal move
-        return self.bestMove if self.bestMove else (-1, -1, -1, -1)  # Fallback if no move found
+        nextMove = self.alphaBetaSearch(state, 5)
+        return nextMove[0], nextMove[1], nextMove[2], nextMove[3]
 
     # Hard AI, returns the best move found by alpha-beta search
-    # def getNextMoveHard(self):
-    #     state = AIGameState(self.game)
-    #     depthLimit = self.computeDepthLimit(state)
-    #     nextMove = self.alphaBetaSearch(state, depthLimit)
-    #     return nextMove[0], nextMove[1], nextMove[2], nextMove[3]
-
     def getNextMoveHard(self):
         state = AIGameState(self.game)
         depthLimit = self.computeDepthLimit(state)
-        alpha = -float('inf')
-        beta = float('inf')
-        maximizingPlayer = True
-        score, nextMove = self.alphaBetaSearch(state, depthLimit, alpha, beta, maximizingPlayer)
-        if nextMove is not None:
-            return nextMove  # This assumes that nextMove is a tuple like (oldrow, oldcol, row, col)
-        else:
-            # Handle the case where no move was found (should not occur if the game is not over)
-            # You might raise an exception, return a default value, or handle it in some other way
-            raise Exception("No valid move found")
+        nextMove = self.alphaBetaSearch(state, depthLimit)
+        return nextMove[0], nextMove[1], nextMove[2], nextMove[3]
 
     # Dynamically compute depth limit
     # Fewer checkers we have, deeper level we can search
@@ -67,57 +54,30 @@ class AIPlayer():
         numcheckers = len(state.AICheckers) + len(state.humanCheckers)
         return 26 - numcheckers
 
-    # def alphaBetaSearch(self, state, depth, alpha, beta, maximizingPlayer):
-    #     if depth == 0 or state.terminalTest():
-    #         return self.evaluateState(state)
-    #
-    #     if maximizingPlayer:
-    #         value = -float('inf')
-    #         for action in state.getActions(True):
-    #             value = max(value, self.alphaBetaSearch(state.result(action), depth - 1, alpha, beta, False))
-    #             alpha = max(alpha, value)
-    #             if alpha >= beta:
-    #                 break
-    #         return value
-    #     else:
-    #         value = float('inf')
-    #         for action in state.getActions(False):
-    #             value = min(value, self.alphaBetaSearch(state.result(action), depth - 1, alpha, beta, True))
-    #             beta = min(beta, value)
-    #             if alpha >= beta:
-    #                 break
-    #         return value
+    def alphaBetaSearch(self, state, depthLimit):
+        # collect statistics for the search
+        self.currentDepth = 0
+        self.maxDepth = 0
+        self.numNodes = 0
+        self.maxPruning = 0
+        self.minPruning = 0
 
-    def alphaBetaSearch(self, state, depth, alpha, beta, maximizingPlayer):
-        if depth == 0 or state.terminalTest():
-            return (self.evaluateState(state),
-                    None)  # Return a tuple of score and the move (None for move because it's a terminal state)
+        self.bestMove = []
+        self.depthLimit = depthLimit
 
-        best_move = None  # Initialize best move
+        starttime = datetime.datetime.now()
+        v = self.maxValue(state, -1000, 1000, self.depthLimit)
 
-        if maximizingPlayer:
-            value = -float('inf')
-            for action in state.getActions(maximizingPlayer):
-                new_state = state.result(action)
-                score, _ = self.alphaBetaSearch(new_state, depth - 1, alpha, beta, not maximizingPlayer)
-                if score > value:
-                    value, best_move = score, action  # Keep track of the best score and best move
-                alpha = max(alpha, value)
-                if alpha >= beta:
-                    break  # Beta cut-off
-            return (value, best_move)  # Return the score along with the best move for this branch
+        # print statistics for the search
 
-        else:  # Minimizing player
-            value = float('inf')
-            for action in state.getActions(maximizingPlayer):
-                new_state = state.result(action)
-                score, _ = self.alphaBetaSearch(new_state, depth - 1, alpha, beta, not maximizingPlayer)
-                if score < value:
-                    value, best_move = score, action  # Keep track of the best score and best move
-                beta = min(beta, value)
-                if alpha >= beta:
-                    break  # Alpha cut-off
-            return (value, best_move)  # Return the score along with the best move for this branch
+        print("Time = " + str(datetime.datetime.now() - starttime))
+        print("selected value " + str(v))
+        print("(1) max depth of the tree = {0:d}".format(self.maxDepth))
+        print("(2) total number of nodes generated = {0:d}".format(self.numNodes))
+        print("(3) number of times pruning occurred in the MAX-VALUE() = {0:d}".format(self.maxPruning))
+        print("(4) number of times pruning occurred in the MIN-VALUE() = {0:d}".format(self.minPruning))
+
+        return self.bestMove
 
     # For AI player (MAX)
     def maxValue(self, state, alpha, beta, depthLimit):
@@ -191,14 +151,21 @@ class AIPlayer():
         self.currentDepth -= 1
         return v
 
-    def evaluateState(self, state):
-        # Simple heuristic for demonstration: difference in the number of pieces
-        # More sophisticated heuristics can take into account piece positions, kings, etc.
-        ai_piece_count = len(state.AICheckers)
-        human_piece_count = len(state.humanCheckers)
-        return ai_piece_count - human_piece_count
-
 # a class for AI to simulate game state
+# class AIGameState():
+#     def __init__(self, game):
+#         self.board = copy.deepcopy(game.getBoard())
+#
+#         self.AICheckers = set()
+#         for checker in game.opponentCheckers:
+#             self.AICheckers.add(checker)
+#         self.humanCheckers = set()
+#         for checker in game.playerCheckers:
+#             self.humanCheckers.add(checker)
+#         self.checkerPositions = {}
+#         for checker, position in game.checkerPositions.items():
+#             self.checkerPositions[checker] = position
+
 class AIGameState():
     def __init__(self, game):
         # Assuming getBoard() now returns an 8x8 board
@@ -208,6 +175,7 @@ class AIGameState():
         self.humanCheckers = set(game.playerCheckers)
         self.checkerPositions = dict(game.checkerPositions)
 
+    # Check if the human player can continue.
     def humanCanContinue(self):
         directions = [[-1, -1], [-1, 1], [-2, -2], [-2, 2]]
         for checker in self.humanCheckers:
@@ -217,223 +185,183 @@ class AIGameState():
                     return True
         return False
 
+    # Check if the AI player can cantinue.
     def AICanContinue(self):
         directions = [[1, -1], [1, 1], [2, -2], [2, 2]]
         for checker in self.AICheckers:
             position = self.checkerPositions[checker]
+            row = position[0]
+            col = position[1]
             for dir in directions:
-                if self.isValidMove(position[0], position[1], position[0] + dir[0], position[1] + dir[1], False):
+                if self.isValidMove(row, col, row + dir[0], col + dir[1], False):
                     return True
         return False
 
+    # Neither player can can continue, thus game over
     def terminalTest(self):
-        if not self.AICheckers or not self.humanCheckers:
+        if len(self.humanCheckers) == 0 or len(self.AICheckers) == 0:
             return True
-        return not (self.AICanContinue() or self.humanCanContinue())
-
-    def isValidMove(self, oldrow, oldcol, row, col, humanTurn):
-        # Updated index validation for an 8x8 board
-        if oldrow < 0 or oldrow > 7 or oldcol < 0 or oldcol > 7 or row < 0 or row > 7 or col < 0 or col > 7:
-            return False
-        if self.board[oldrow][oldcol] == 0 or self.board[row][col] != 0:
-            return False
-
-        if humanTurn:
-            if row - oldrow == -1:
-                return abs(col - oldcol) == 1
-            elif row - oldrow == -2:
-                return (col - oldcol == -2 and self.board[row+1][col+1] < 0) or (col - oldcol == 2 and self.board[row+1][col-1] < 0)
         else:
-            if row - oldrow == 1:
-                return abs(col - oldcol) == 1
-            elif row - oldrow == 2:
-                return (col - oldcol == -2 and self.board[row-1][col+1] > 0) or (col - oldcol == 2 and self.board[row-1][col-1] > 0)
-        return False
+            return (not self.AICanContinue()) and (not self.humanCanContinue())
 
+    # Check if current move is valid
+    def isValidMove(self, oldrow, oldcol, row, col, humanTurn):
+        # invalid index
+        if oldrow < 0 or oldrow > 7 or oldcol < 0 or oldcol > 7 \
+                or row < 0 or row > 7 or col < 0 or col > 7:
+            return False
+        # No checker exists in original position
+        if self.board[oldrow][oldcol] == 0:
+            return False
+        # Another checker exists in destination position
+        if self.board[row][col] != 0:
+            return False
+
+        # human player's turn
+        if humanTurn:
+            if row - oldrow == -1:   # regular move
+                return abs(col - oldcol) == 1
+            elif row - oldrow == -2:  # capture move
+                #  \ direction or / direction
+                return (col - oldcol == -2 and self.board[row+1][col+1] < 0) \
+                       or (col - oldcol == 2 and self.board[row+1][col-1] < 0)
+            else:
+                return False
+        # opponent's turn
+        else:
+            if row - oldrow == 1:   # regular move
+                return abs(col - oldcol) == 1
+            elif row - oldrow == 2: # capture move
+                # / direction or \ direction
+                return (col - oldcol == -2 and self.board[row-1][col+1] > 0) \
+                       or (col - oldcol == 2 and self.board[row-1][col-1] > 0)
+            else:
+                return False
+
+    # compute utility value of terminal state
+    # utility value = difference in # of checkers * 500 + # of AI checkers * 50
+    # utility value has larger weights so that is it preferred over heuristic values
     def computeUtilityValue(self):
-        utility = (len(self.AICheckers) - len(self.humanCheckers)) * 500 + len(self.AICheckers) * 50
+        utility = (len(self.AICheckers) - len(self.humanCheckers)) * 500 \
+                  + len(self.AICheckers) * 50
+        #print("Utility value = {0:d} :: {1:d} AI vs {2:d} Human".format(utility, len(self.AICheckers), len(self.humanCheckers)))
         return utility
 
+    # compute heuristic value of a non-terminal state
+    # heuristic value = diff in # of checkers * 50 + # of safe checkers * 10 + # of AI checkers
     def computeHeuristic(self):
-        heuristic = (len(self.AICheckers) - len(self.humanCheckers)) * 50 + self.countSafeAICheckers() * 10 + len(self.AICheckers)
-        return heuristic
+        heurisitc = (len(self.AICheckers) - len(self.humanCheckers)) * 50 \
+                    + self.countSafeAICheckers() * 10 + len(self.AICheckers)
+        #print("Heuristic value = {0:d} :: {1:d} AI vs {2:d} Human".format(heurisitc, len(self.AICheckers), len(self.humanCheckers)))
+        return heurisitc
 
+    # Count the number of safe AI checker.
+    # A safe AI checker is one checker that no opponent can capture.
     def countSafeAICheckers(self):
         count = 0
         for AIchecker in self.AICheckers:
-            position = self.checkerPositions[AIchecker]
+            AIrow = self.checkerPositions[AIchecker][0]
+            AIcol = self.checkerPositions[AIchecker][1]
             safe = True
-            for humanchecker in self.humanCheckers:
-                humanPosition = self.checkerPositions[humanchecker]
-                if abs(position[0] - humanPosition[0]) <= 2 and abs(position[1] - humanPosition[1]) <= 2:
-                    safe = False
-                    break
+            if not (AIcol == 0 or AIcol == len(self.board[0])):
+                # checkers near the boundaries are safe
+                for humanchecker in self.humanCheckers:
+                    if AIrow < self.checkerPositions[humanchecker][0]:
+                        safe = False
+                        break
             if safe:
                 count += 1
         return count
 
+    # get all possible actions for the current player
     def getActions(self, humanTurn):
-        # Updated for an 8x8 board
-        checkers = self.humanCheckers if humanTurn else self.AICheckers
-        regularDirs = [[-1, -1], [-1, 1]] if humanTurn else [[1, -1], [1, 1]]
-        captureDirs = [[-2, -2], [-2, 2]] if humanTurn else [[2, -2], [2, 2]]
+        if humanTurn:
+            checkers = self.humanCheckers
+            regularDirs = [[-1, -1], [-1, 1]]
+            captureDirs = [[-2, -2], [-2, 2]]
+        else:
+            checkers = self.AICheckers
+            regularDirs = [[1, -1], [1, 1]]
+            captureDirs = [[2, -2], [2, 2]]
 
-        regularMoves, captureMoves = [], []
+        regularMoves = []
+        captureMoves = []
         for checker in checkers:
-            position = self.checkerPositions[checker]
-            for dir in regularDirs + captureDirs:
-                if self.isValidMove(position[0], position[1], position[0] + dir[0], position[1] + dir[1], humanTurn):
-                    move = [position[0], position[1], position[0] + dir[0], position[1] + dir[1]]
-                    (captureMoves if abs(dir[0]) == 2 else regularMoves).append(move)
+            oldrow = self.checkerPositions[checker][0]
+            oldcol = self.checkerPositions[checker][1]
+            for dir in regularDirs:
+                if self.isValidMove(oldrow, oldcol, oldrow+dir[0], oldcol+dir[1], humanTurn):
+                    regularMoves.append([oldrow, oldcol, oldrow+dir[0], oldcol+dir[1]])
+            for dir in captureDirs:
+                if self.isValidMove(oldrow, oldcol, oldrow+dir[0], oldcol+dir[1], humanTurn):
+                    captureMoves.append([oldrow, oldcol, oldrow+dir[0], oldcol+dir[1]])
 
-        return captureMoves if captureMoves else regularMoves
+        # must take capture move if possible
+        if captureMoves:
+            return captureMoves
+        else:
+            return regularMoves
 
-    def result(self, action):
-        # Create a new game state as a deep copy of the current one
-        new_state = copy.deepcopy(self)
-        # Apply the action to the new game state
-        new_state.applyAction(action)
-        # Return the new game state
-        return new_state
-
+    # Apply given action to the game board.
+    # :param action: [oldrow, oldcol, newrow, newcol]
+    # :return: the label of the captured checker. 0 if none.
     def applyAction(self, action):
-        oldrow, oldcol, row, col = action
+        oldrow = action[0]
+        oldcol = action[1]
+        row = action[2]
+        col = action[3]
         captured = 0
 
-        # Move the checker
+        # move the checker
         toMove = self.board[oldrow][oldcol]
         self.checkerPositions[toMove] = (row, col)
         self.board[row][col] = toMove
         self.board[oldrow][oldcol] = 0
 
-        # If a capture move, remove the captured checker
+        # capture move, remove captured checker
         if abs(oldrow - row) == 2:
-            midrow, midcol = (oldrow + row) // 2, (oldcol + col) // 2
-            captured = self.board[midrow][midcol]
-            self.board[midrow][midcol] = 0
-            self.checkerPositions.pop(captured, None)
-            # Update the sets of checkers
+            captured = self.board[(oldrow + row) // 2][(oldcol + col) // 2]
             if captured > 0:
                 self.humanCheckers.remove(captured)
             else:
-                self.AICheckers.remove(-captured) # Ensure the removed ID is positive for AI checkers
+                self.AICheckers.remove(captured)
+            self.board[(oldrow + row) // 2][(oldcol + col) // 2] = 0
+            self.checkerPositions.pop(captured, None)
 
         return captured
 
+    # Reset given action to the game board. Restored captured checker if any.
+    # :param action: [oldrow, oldcol, newrow, newcol]
+    # :return: the label of the captured checker. 0 if none.
     def resetAction(self, action, captured):
-        oldrow, oldcol, row, col = action
+        oldrow = action[0]
+        oldcol = action[1]
+        row = action[2]
+        col = action[3]
 
-        # Move the checker back
+        # move the checker
         toMove = self.board[row][col]
         self.checkerPositions[toMove] = (oldrow, oldcol)
         self.board[oldrow][oldcol] = toMove
         self.board[row][col] = 0
 
-        # If a capture move, restore the captured checker
+        # capture move, remove captured checker
         if abs(oldrow - row) == 2:
-            midrow, midcol = (oldrow + row) // 2, (oldcol + col) // 2
-            self.board[midrow][midcol] = captured
-            self.checkerPositions[captured] = (midrow, midcol)
-            # Update the sets of checkers
             if captured > 0:
                 self.humanCheckers.add(captured)
             else:
-                self.AICheckers.add(-captured) # Ensure the added ID is positive for AI checkers
+                self.AICheckers.add(captured)
+            self.board[(oldrow + row) // 2][(oldcol + col) // 2] = captured
+            self.checkerPositions[captured] = ((oldrow + row) // 2, (oldcol + col) // 2)
 
-    # def applyAction(self, action):
-    #     oldrow, oldcol, row, col = action
-    #     captured = 0
-    #
-    #     # Validate the move coordinates before proceeding
-    #     if not self.isValidMove(oldrow, oldcol, row, col, self.isPlayerTurn()):
-    #         return None  # Or raise an exception, or handle the error as appropriate
-    #
-    #     # Move the checker
-    #     toMove = self.board[oldrow][oldcol]
-    #     self.checkerPositions[toMove] = (row, col)
-    #     self.board[row][col] = toMove
-    #     self.board[oldrow][oldcol] = 0
-    #
-    #     # If a capture move, remove the captured checker
-    #     if abs(oldrow - row) == 2:
-    #         midrow, midcol = (oldrow + row) // 2, (oldcol + col) // 2
-    #         captured = self.board[midrow][midcol]
-    #         if captured != 0:  # Check that a checker is indeed captured
-    #             self.board[midrow][midcol] = 0
-    #             self.checkerPositions.pop(captured, None)
-    #             # Update the sets of checkers, ensure captured checker ID is handled correctly
-    #             if captured > 0:
-    #                 self.humanCheckers.discard(captured)  # Use discard to avoid KeyError if item is not found
-    #             elif captured < 0:
-    #                 self.AICheckers.discard(-captured)  # Make sure to discard the positive ID
-    #
-    #     return captured
     def printBoard(self):
-        for row in self.board:
-            print(' '.join(f'{item:>3}' for item in row))
-        print('-' * 40)  # Adjusted for an 8x8 board
+        for i in range(len(self.board)):
+            for j in range(len(self.board[i])):
+                check = self.board[i][j]
+                if (check < 0):
+                    print(check,end=' ')
+                else:
+                    print(' ' + str(check),end=' ')
 
-
-    # # Apply given action to the game board.
-    # # :param action: [oldrow, oldcol, newrow, newcol]
-    # # :return: the label of the captured checker. 0 if none.
-    # def applyAction(self, action):
-    #     oldrow = action[0]
-    #     oldcol = action[1]
-    #     row = action[2]
-    #     col = action[3]
-    #     captured = 0
-    #
-    #     # move the checker
-    #     toMove = self.board[oldrow][oldcol]
-    #     self.checkerPositions[toMove] = (row, col)
-    #     self.board[row][col] = toMove
-    #     self.board[oldrow][oldcol] = 0
-    #
-    #     # capture move, remove captured checker
-    #     if abs(oldrow - row) == 2:
-    #         captured = self.board[(oldrow + row) // 2][(oldcol + col) // 2]
-    #         if captured > 0:
-    #             self.humanCheckers.remove(captured)
-    #         else:
-    #             self.AICheckers.remove(captured)
-    #         self.board[(oldrow + row) // 2][(oldcol + col) // 2] = 0
-    #         self.checkerPositions.pop(captured, None)
-    #
-    #     return captured
-    #
-    # # Reset given action to the game board. Restored captured checker if any.
-    # # :param action: [oldrow, oldcol, newrow, newcol]
-    # # :return: the label of the captured checker. 0 if none.
-    # def resetAction(self, action, captured):
-    #     oldrow = action[0]
-    #     oldcol = action[1]
-    #     row = action[2]
-    #     col = action[3]
-    #
-    #     # move the checker
-    #     toMove = self.board[row][col]
-    #     self.checkerPositions[toMove] = (oldrow, oldcol)
-    #     self.board[oldrow][oldcol] = toMove
-    #     self.board[row][col] = 0
-    #
-    #     # capture move, remove captured checker
-    #     if abs(oldrow - row) == 2:
-    #         if captured > 0:
-    #             self.humanCheckers.add(captured)
-    #         else:
-    #             self.AICheckers.add(captured)
-    #         self.board[(oldrow + row) // 2][(oldcol + col) // 2] = captured
-    #         self.checkerPositions[captured] = ((oldrow + row) // 2, (oldcol + col) // 2)
-    #
-    # def printBoard(self):
-    #     for i in range(len(self.board)):
-    #         for j in range(len(self.board[i])):
-    #             check = self.board[i][j]
-    #             if (check < 0):
-    #                 print(check,end=' ')
-    #             else:
-    #                 print(' ' + str(check),end=' ')
-    #
-    #         print()
-    #     print('------------------------')
+            print()
+        print('------------------------')
