@@ -26,10 +26,10 @@ class CheckerGame():
 
     # Let player decide level of difficulty
     def getDifficulty(self):
-        ans = eval(input("What level of difficulty? (1 Easy, 2 Medium, 3 Hard) "))
-        while not (ans == 1 or ans == 2 or ans == 3):
-            print("Invalid input, please enter a value between 1 and 3")
-            ans = eval(input("What level of difficulty? (1 Easy, 2 Medium, 3 Hard) "))
+        ans = eval(input("What level of difficulty? (1-Easy, 2-Hard) "))
+        while not (ans == 1 or ans == 2):
+            print("Invalid input, please enter a value of 1 or 2")
+            ans = eval(input("What level of difficulty? (1-Easy, 2-Hard) "))
         return ans
 
     # This function initializes the game board.

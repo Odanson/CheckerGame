@@ -9,20 +9,18 @@ class AIPlayer():
         self.difficulty = difficulty
 
     def getNextMove(self):
-        if self.difficulty == 1:
-            return self.getNextMoveEasy()
-        elif self.difficulty == 2:
+        if self.difficulty == 2:
             return self.getNextMoveMedium()
-        else:
+        else:  # Only medium and hard levels remain
             return self.getNextMoveHard()
 
     # Simple AI, returns a random legal move
-    def getNextMoveEasy(self):
-        state = AIGameState(self.game)
-        moves = state.getActions(False)
-        index = random.randrange(len(moves))
-        chosenMove = moves[index]
-        return chosenMove[0], chosenMove[1], chosenMove[2], chosenMove[3]
+    # def getNextMoveEasy(self):
+    #     state = AIGameState(self.game)
+    #     moves = state.getActions(False)
+    #     index = random.randrange(len(moves))
+    #     chosenMove = moves[index]
+    #     return chosenMove[0], chosenMove[1], chosenMove[2], chosenMove[3]
 
     # Simple AI, returns a random legal move
     # def getNextMoveEasy(self):
