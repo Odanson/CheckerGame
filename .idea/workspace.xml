@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b34b9dd8-a571-4ada-bf54-a350804a8167" name="Changes" comment="update AIPlayer.py, BoardGUI.py and CheckerGame.py">
+    <list default="true" id="b34b9dd8-a571-4ada-bf54-a350804a8167" name="Changes" comment="update getNextMove and getDifficulty">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AIPlayer.py" beforeDir="false" afterPath="$PROJECT_DIR$/AIPlayer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CheckerGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/CheckerGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BoardGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/BoardGUI.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,15 +42,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.main.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/odans/OneDrive/Desktop/IST/CheckerGame_08_04"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/odans/OneDrive/Desktop/IST/CheckerGame_08_04&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CheckerGame" />
@@ -153,7 +152,15 @@
       <option name="project" value="LOCAL" />
       <updated>1712947241357</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="update getNextMove and getDifficulty">
+      <option name="closed" value="true" />
+      <created>1712948622112</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1712948622112</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -173,6 +180,7 @@
     <MESSAGE value="modify initBoard" />
     <MESSAGE value="Change AI pieces color to green and also human pieces highlight color" />
     <MESSAGE value="update AIPlayer.py, BoardGUI.py and CheckerGame.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="update AIPlayer.py, BoardGUI.py and CheckerGame.py" />
+    <MESSAGE value="update getNextMove and getDifficulty" />
+    <option name="LAST_COMMIT_MESSAGE" value="update getNextMove and getDifficulty" />
   </component>
 </project>
