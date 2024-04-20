@@ -6,7 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="b34b9dd8-a571-4ada-bf54-a350804a8167" name="Changes" comment="update getNextMove and getDifficulty">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AIPlayer.py" beforeDir="false" afterPath="$PROJECT_DIR$/AIPlayer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BoardGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/BoardGUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CheckerGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/CheckerGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -164,11 +167,41 @@
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="b475cbb4-4b2c-43d5-80ff-030b0109941d" value="TOOL_WINDOW" />
+      </map>
+    </option>
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
             <State />
+          </value>
+        </entry>
+        <entry key="b475cbb4-4b2c-43d5-80ff-030b0109941d">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+            </State>
           </value>
         </entry>
       </map>

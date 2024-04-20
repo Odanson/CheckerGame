@@ -1,7 +1,8 @@
-import copy    #For shallow copy of list
-import math    #for mathematical function
-import random   #for random moves
-import datetime   # to display date and time
+import copy  # For shallow copy of list
+import math  # for mathematical function
+import random  # for random moves
+import datetime  # to display date and time
+
 
 class AIPlayer():
     def __init__(self, game, difficulty):
@@ -14,26 +15,7 @@ class AIPlayer():
         else:  # Only medium and hard levels remain
             return self.getNextMoveHard()
 
-    # Simple AI, returns a random legal move
-    # def getNextMoveEasy(self):
-    #     state = AIGameState(self.game)
-    #     moves = state.getActions(False)
-    #     index = random.randrange(len(moves))
-    #     chosenMove = moves[index]
-    #     return chosenMove[0], chosenMove[1], chosenMove[2], chosenMove[3]
-
-    # Simple AI, returns a random legal move
-    # def getNextMoveEasy(self):
-    #     state = AIGameState(self.game)
-    #     moves = state.getActions(False)
-    #     if not moves:  # No moves available
-    #         print("No moves available for AI")
-    #         return None  # Return None or handle this scenario appropriately
-    #     index = random.randrange(len(moves))
-    #     chosenMove = moves[index]
-    #     return chosenMove[0], chosenMove[1], chosenMove[2], chosenMove[3]
-
-    # Hard AI, returns the move found by alpha-beta search with depth limit 5
+    # Medium AI, returns the move found by alpha-beta search with depth limit 5
     def getNextMoveMedium(self):
         state = AIGameState(self.game)
         nextMove = self.alphaBetaSearch(state, 5)
@@ -139,7 +121,7 @@ class AIPlayer():
                 v = next
             state.resetAction(a, captured)
 
-            #alpha-beta min pruning
+            # alpha-beta min pruning
             if v <= alpha:
                 self.minPruning += 1
                 self.currentDepth -= 1
@@ -149,24 +131,9 @@ class AIPlayer():
         self.currentDepth -= 1
         return v
 
-# a class for AI to simulate game state
-# class AIGameState():
-#     def __init__(self, game):
-#         self.board = copy.deepcopy(game.getBoard())
-#
-#         self.AICheckers = set()
-#         for checker in game.opponentCheckers:
-#             self.AICheckers.add(checker)
-#         self.humanCheckers = set()
-#         for checker in game.playerCheckers:
-#             self.humanCheckers.add(checker)
-#         self.checkerPositions = {}
-#         for checker, position in game.checkerPositions.items():
-#             self.checkerPositions[checker] = position
 
 class AIGameState():
     def __init__(self, game):
-        # Assuming getBoard() now returns an 8x8 board
         self.board = copy.deepcopy(game.getBoard())
 
         self.AICheckers = set(game.opponentCheckers)
@@ -217,22 +184,22 @@ class AIGameState():
 
         # human player's turn
         if humanTurn:
-            if row - oldrow == -1:   # regular move
+            if row - oldrow == -1:  # regular move
                 return abs(col - oldcol) == 1
             elif row - oldrow == -2:  # capture move
                 #  \ direction or / direction
-                return (col - oldcol == -2 and self.board[row+1][col+1] < 0) \
-                       or (col - oldcol == 2 and self.board[row+1][col-1] < 0)
+                return (col - oldcol == -2 and self.board[row + 1][col + 1] < 0) \
+                    or (col - oldcol == 2 and self.board[row + 1][col - 1] < 0)
             else:
                 return False
         # opponent's turn
         else:
-            if row - oldrow == 1:   # regular move
+            if row - oldrow == 1:  # regular move
                 return abs(col - oldcol) == 1
-            elif row - oldrow == 2: # capture move
+            elif row - oldrow == 2:  # capture move
                 # / direction or \ direction
-                return (col - oldcol == -2 and self.board[row-1][col+1] > 0) \
-                       or (col - oldcol == 2 and self.board[row-1][col-1] > 0)
+                return (col - oldcol == -2 and self.board[row - 1][col + 1] > 0) \
+                    or (col - oldcol == 2 and self.board[row - 1][col - 1] > 0)
             else:
                 return False
 
@@ -242,7 +209,8 @@ class AIGameState():
     def computeUtilityValue(self):
         utility = (len(self.AICheckers) - len(self.humanCheckers)) * 500 \
                   + len(self.AICheckers) * 50
-        #print("Utility value = {0:d} :: {1:d} AI vs {2:d} Human".format(utility, len(self.AICheckers), len(self.humanCheckers)))
+        # print("Utility value = {0:d} :: {1:d} AI vs {2:d} Human".format(utility, len(self.AICheckers),
+        # len(self.humanCheckers)))
         return utility
 
     # compute heuristic value of a non-terminal state
@@ -250,7 +218,8 @@ class AIGameState():
     def computeHeuristic(self):
         heurisitc = (len(self.AICheckers) - len(self.humanCheckers)) * 50 \
                     + self.countSafeAICheckers() * 10 + len(self.AICheckers)
-        #print("Heuristic value = {0:d} :: {1:d} AI vs {2:d} Human".format(heurisitc, len(self.AICheckers), len(self.humanCheckers)))
+        # print("Heuristic value = {0:d} :: {1:d} AI vs {2:d} Human".format(heurisitc, len(self.AICheckers),
+        # len(self.humanCheckers)))
         return heurisitc
 
     # Count the number of safe AI checker.
@@ -288,11 +257,11 @@ class AIGameState():
             oldrow = self.checkerPositions[checker][0]
             oldcol = self.checkerPositions[checker][1]
             for dir in regularDirs:
-                if self.isValidMove(oldrow, oldcol, oldrow+dir[0], oldcol+dir[1], humanTurn):
-                    regularMoves.append([oldrow, oldcol, oldrow+dir[0], oldcol+dir[1]])
+                if self.isValidMove(oldrow, oldcol, oldrow + dir[0], oldcol + dir[1], humanTurn):
+                    regularMoves.append([oldrow, oldcol, oldrow + dir[0], oldcol + dir[1]])
             for dir in captureDirs:
-                if self.isValidMove(oldrow, oldcol, oldrow+dir[0], oldcol+dir[1], humanTurn):
-                    captureMoves.append([oldrow, oldcol, oldrow+dir[0], oldcol+dir[1]])
+                if self.isValidMove(oldrow, oldcol, oldrow + dir[0], oldcol + dir[1], humanTurn):
+                    captureMoves.append([oldrow, oldcol, oldrow + dir[0], oldcol + dir[1]])
 
         # must take capture move if possible
         if captureMoves:
@@ -329,8 +298,8 @@ class AIGameState():
         return captured
 
     # Reset given action to the game board. Restored captured checker if any.
-    # :param action: [oldrow, oldcol, newrow, newcol]
-    # :return: the label of the captured checker. 0 if none.
+    # param action: [oldrow, oldcol, newrow, newcol]
+    # return: the label of the captured checker. 0 if none.
     def resetAction(self, action, captured):
         oldrow = action[0]
         oldcol = action[1]
@@ -357,9 +326,9 @@ class AIGameState():
             for j in range(len(self.board[i])):
                 check = self.board[i][j]
                 if (check < 0):
-                    print(check,end=' ')
+                    print(check, end=' ')
                 else:
-                    print(' ' + str(check),end=' ')
+                    print(' ' + str(check), end=' ')
 
             print()
         print('------------------------')

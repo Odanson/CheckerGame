@@ -1,11 +1,13 @@
-import tkinter
-import time
 import _thread
 from BoardGUI import *
 from AIPlayer import *
 
-class CheckerGame():
+
+class CheckerGame:
     def __init__(self):
+        self.opponentCheckers = None
+        self.playerCheckers = None
+        self.root = None
         self.lock = _thread.allocate_lock()
         self.board = self.initBoard()
         self.playerTurn = self.whoGoFirst()
@@ -33,8 +35,6 @@ class CheckerGame():
         return ans
 
     # This function initializes the game board.
-    # Each checker has a label. Positive checkers for the player,
-    # and negative checkers for the opponent.
     def initBoard(self):
         board = [[0] * 8 for _ in range(8)]  # Change board size
         self.playerCheckers = set()
@@ -42,7 +42,7 @@ class CheckerGame():
         self.checkerPositions = {}
         # Setting up checkers for an 8x8 board (3 rows each side)
         for i in range(8):
-            if (i < 3 or i > 4):  # Only populate 3 rows at the top and bottom
+            if i < 3 or i > 4:  # Only populate 3 rows at the top and bottom
                 for j in range(8):
                     if (i + j) % 2 == 1:
                         if i < 3:
@@ -63,10 +63,10 @@ class CheckerGame():
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
                 check = self.board[i][j]
-                if (check < 0):
-                    print(check,end=' ')
+                if check < 0:
+                    print(check, end=' ')
                 else:
-                    print(' ' + str(check),end=' ')
+                    print(' ' + str(check), end=' ')
 
             print()
 
@@ -112,9 +112,9 @@ class CheckerGame():
             self.getGameSummary()
             return
         self.changePlayerTurn()
-        if self.playerTurn:     # let player keep going
+        if self.playerTurn:  # let player keep going
             return
-        else:                   # AI's turn
+        else:  # AI's turn
             self.AIMakeMove()
 
     # Temporarily Pause GUI and ask AI player to make next move.
@@ -123,19 +123,6 @@ class CheckerGame():
         oldrow, oldcol, row, col = self.AIPlayer.getNextMove()
         self.move(oldrow, oldcol, row, col)
         self.GUI.resumeGUI()
-
-    # Temporarily Pause GUI and ask AI player to make next move.
-    # def AIMakeMove(self):
-    #     self.GUI.pauseGUI()
-    #     move = self.AIPlayer.getNextMove()
-    #     if move is None:
-    #         print("No valid move for AI, skipping turn")
-    #         # Implement logic to handle no available moves, like passing the turn
-    #         self.GUI.resumeGUI()
-    #         return
-    #     oldrow, oldcol, row, col = move
-    #     self.move(oldrow, oldcol, row, col)
-    #     self.GUI.resumeGUI()
 
     # update checker position
     def makeMove(self, oldrow, oldcol, row, col):
@@ -170,11 +157,11 @@ class CheckerGame():
             oldrow = self.checkerPositions[checker][0]
             oldcol = self.checkerPositions[checker][1]
             for dir in regularDirs:
-                if self.isValidMove(oldrow, oldcol, oldrow+dir[0], oldcol+dir[1], True):
-                    regularMoves.append([oldrow, oldcol, oldrow+dir[0], oldcol+dir[1]])
+                if self.isValidMove(oldrow, oldcol, oldrow + dir[0], oldcol + dir[1], True):
+                    regularMoves.append([oldrow, oldcol, oldrow + dir[0], oldcol + dir[1]])
             for dir in captureDirs:
-                if self.isValidMove(oldrow, oldcol, oldrow+dir[0], oldcol+dir[1], True):
-                    captureMoves.append([oldrow, oldcol, oldrow+dir[0], oldcol+dir[1]])
+                if self.isValidMove(oldrow, oldcol, oldrow + dir[0], oldcol + dir[1], True):
+                    captureMoves.append([oldrow, oldcol, oldrow + dir[0], oldcol + dir[1]])
 
         # must take capture move if possible
         if captureMoves:
@@ -197,26 +184,26 @@ class CheckerGame():
 
         # player's turn
         if playerTurn:
-            if row - oldrow == -1:   # regular move
+            if row - oldrow == -1:  # regular move
                 return abs(col - oldcol) == 1
             elif row - oldrow == -2:  # capture move
                 #  \ direction or / direction
-                return (col - oldcol == -2 and self.board[row+1][col+1] < 0) \
-                       or (col - oldcol == 2 and self.board[row+1][col-1] < 0)
+                return (col - oldcol == -2 and self.board[row + 1][col + 1] < 0) \
+                    or (col - oldcol == 2 and self.board[row + 1][col - 1] < 0)
             else:
                 return False
         # opponent's turn
         else:
-            if row - oldrow == 1:   # regular move
+            if row - oldrow == 1:  # regular move
                 return abs(col - oldcol) == 1
-            elif row - oldrow == 2: # capture move
+            elif row - oldrow == 2:  # capture move
                 # / direction or \ direction
-                return (col - oldcol == -2 and self.board[row-1][col+1] > 0) \
-                       or (col - oldcol == 2 and self.board[row-1][col-1] > 0)
+                return (col - oldcol == -2 and self.board[row - 1][col + 1] > 0) \
+                    or (col - oldcol == 2 and self.board[row - 1][col - 1] > 0)
             else:
                 return False
 
-    # Check if the player can cantinue
+    # Check if the player can continue
     def playerCanContinue(self):
         directions = [[-1, -1], [-1, 1], [-2, -2], [-2, 2]]
         for checker in self.playerCheckers:
@@ -228,7 +215,7 @@ class CheckerGame():
                     return True
         return False
 
-    # Check if the opponent can cantinue
+    # Check whether opponent can continue
     def opponentCanContinue(self):
         directions = [[1, -1], [1, 1], [2, -2], [2, 2]]
         for checker in self.opponentCheckers:
@@ -247,6 +234,20 @@ class CheckerGame():
         else:
             return (not self.playerCanContinue()) and (not self.opponentCanContinue())
 
+    def shutdown(self):
+        # Add logic to close the GUI and any other resources
+        try:
+            # Attempt to close the Tkinter root window
+            self.root.quit()  # This stops the mainloop
+            self.root.destroy()  # This destroys the Tkinter window
+        except Exception as e:
+            print(f"Failed to close the GUI properly: {e}")
+
+        try:
+            pass
+        except Exception as e:
+            print(f"Failed to cleanly close all threads: {e}")
+
     def getGameSummary(self):
         self.GUI.pauseGUI()
         print("Game Over!")
@@ -258,4 +259,3 @@ class CheckerGame():
             print("Computer won by {0:d} checkers! Try again!".format(opponentNum - playerNum))
         else:
             print("It is a draw! Try again!")
-
