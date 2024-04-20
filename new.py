@@ -152,7 +152,7 @@ class AIGameState:
                     return True
         return False
 
-    # Check if the AI player can cantinue.
+    # Check if the AI player can continue.
     def AICanContinue(self):
         directions = [[1, -1], [1, 1], [2, -2], [2, 2]]
         for checker in self.AICheckers:
@@ -164,7 +164,7 @@ class AIGameState:
                     return True
         return False
 
-    # Neither player can can continue, thus game over
+    # Game over since neither player can continue
     def terminalTest(self):
         if len(self.humanCheckers) == 0 or len(self.AICheckers) == 0:
             return True
@@ -184,7 +184,7 @@ class AIGameState:
         if self.board[row][col] != 0:
             return False
 
-        # human player's turn
+        # Human player's turn
         if humanTurn:
             if row - oldrow == -1:  # regular move
                 return abs(col - oldcol) == 1
@@ -206,7 +206,7 @@ class AIGameState:
                 return False
 
     # compute utility value of terminal state
-    # utility value = difference in # of checkers * 500 + # of AI checkers * 50
+    # utility value = difference in number of checkers * 500 + number of AI checkers * 50
     # utility value has larger weights so that is it preferred over heuristic values
     def computeUtilityValue(self):
         utility = (len(self.AICheckers) - len(self.humanCheckers)) * 500 \
@@ -216,7 +216,7 @@ class AIGameState:
         return utility
 
     # compute heuristic value of a non-terminal state
-    # heuristic value = diff in # of checkers * 50 + # of safe checkers * 10 + # of AI checkers
+    # heuristic value = diff in number of checkers * 50 + number of safe checkers * 10 + number of AI checkers
     def computeHeuristic(self):
         heurisitc = (len(self.AICheckers) - len(self.humanCheckers)) * 50 \
                     + self.countSafeAICheckers() * 10 + len(self.AICheckers)
@@ -272,8 +272,8 @@ class AIGameState:
             return regularMoves
 
     # Apply given action to the game board.
-    # :param action: [oldrow, oldcol, newrow, newcol]
-    # :return: the label of the captured checker. 0 if none.
+    # param action: [oldrow, oldcol, newrow, newcol]
+    # return: the label of the captured checker. 0 if none.
     def applyAction(self, action):
         oldrow = action[0]
         oldcol = action[1]
@@ -510,10 +510,10 @@ class BoardGUI:
                                                                   (j + 1) * self.col_width - 10,
                                                                   (i + 1) * self.row_height - 10,
                                                                   fill="red")
-                        else:  # no checker
+                        else:
                             continue
 
-                        # raise the tiles to highest layer
+                        # raise the tiles to the highest layer
                         self.c.tag_raise(self.tiles[i][j])
 
             # tell game logic that GUI has updated the board
@@ -524,11 +524,11 @@ class BoardGUI:
 
     # this function checks if the checker belongs to the current player
     # if isPlayerTurn() returns True, then it is player's turn and only
-    # postive checkers can be moved. Vice versa.
+    # positive checkers can be moved. Vice versa.
     def isCurrentPlayerChecker(self, row, col):
         return self.game.isPlayerTurn() == (self.board[row][col] > 0)
 
-    # callback function that process user's mouse clicks
+    # callback function that processes user's mouse clicks
     def processClick(self, event):
         col = int(event.x // self.col_width)
         row = int(event.y // self.row_height)
@@ -550,7 +550,7 @@ class BoardGUI:
                                                           fill="yellow")
                 self.checkerSelected = True
 
-            else:  # no checker at the clicked postion
+            else:  # no checker at the clicked position
                 return
 
         else:  # There is a checker being selected
