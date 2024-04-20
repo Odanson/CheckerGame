@@ -818,9 +818,9 @@ class CheckerGame:
         print("Game Over!")
         playerNum = len(self.playerCheckers)
         opponentNum = len(self.opponentCheckers)
-        if (playerNum > opponentNum):
+        if playerNum > opponentNum:
             print("Player won by {0:d} checkers! Congratulation!".format(playerNum - opponentNum))
-        elif (playerNum < opponentNum):
+        elif playerNum < opponentNum:
             print("Computer won by {0:d} checkers! Try again!".format(opponentNum - playerNum))
         else:
             print("It is a draw! Try again!")
