@@ -17,7 +17,7 @@ class AIPlayer:
         else:
             return self.getNextMoveHard()
 
-    # Medium AI, returns the move found by alpha-beta search with depth limit 5
+    # Easy AI, returns the move found by alpha-beta search with depth limit 3
     def getNextMoveEasy(self):
         state = AIGameState(self.game)
         nextMove = self.alphaBetaSearch(state, 3)
@@ -398,22 +398,24 @@ class BoardGUI:
         text_font = Font(family="Helvetica", size=12)
 
         # Title Label
-        title_label = tkinter.Label(rules_window, text="Checkers Game Rules", font=title_font, fg='black', bg='white')
+        title_label = tkinter.Label(rules_window, text="Game Rules", font=title_font, fg='black', bg='white')
         title_label.pack(side=tkinter.TOP, pady=10)  # padding for better spacing
 
         # Rules Text
-        rules_text = tkinter.Text(rules_window, height=15, width=70, font=text_font, wrap=tkinter.WORD, fg='white',
+        rules_text = tkinter.Text(rules_window, height=11, width=70, font=text_font, wrap=tkinter.WORD, fg='white',
                                   bg='black', padx=10, pady=10, bd=2, relief=tkinter.SUNKEN)
         rules_text.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
         # Define the rules text
         rules = """
-    1. Each player starts with 12 pieces on the three rows closest to them.
-    2. Pieces can only move diagonally on dark tiles.
-    3. Regular pieces move forward one tile; kings can move forward and backward.
-    4. Capture opponent pieces by jumping over them diagonally.
-    5. Reach the farthest row to turn a regular piece into a king.
-    6. The player with no pieces left or no possible moves loses."""
+    * Each player starts with 12 pieces on the three rows closest to them.
+    * Pieces can only move diagonally on grey tiles.
+    * Regular pieces move forward one tile; kings can move forward and backward.
+    * Capture opponent pieces by jumping over them diagonally.
+    * Every opportunity to capture must be taken.
+    * Reach the farthest row to turn a regular piece into a king.
+    * If no moves are possible for either player, the one with the most pieces wins. 
+    * If both players have the same number of pieces, it's a draw."""
         rules_text.insert(tkinter.END, rules)
         rules_text.config(state=tkinter.DISABLED, bg="#27333f")
 
@@ -441,15 +443,17 @@ class BoardGUI:
         title_label.pack(side=tkinter.TOP, pady=10)  # padding for better spacing
 
         # Help Text
-        help_text = tkinter.Text(help_window, height=15, width=60, font=text_font, wrap=tkinter.WORD, padx=10,
+        help_text = tkinter.Text(help_window, height=10, width=60, font=text_font, wrap=tkinter.WORD, padx=10,
                                  fg='white', bg='black', pady=10, bd=2, relief=tkinter.SUNKEN)
         help_text.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
         # Define the help text
         instructions = """How to play:
-    1. Click on a piece to select it.
-    2. Click on a highlighted square to move the selected piece.
-    3. Jump over the opponent's pieces to capture them.
+    * The human player chooses to move first or second at the start
+    * Each player takes turn to make a move
+    * Click on a piece to select it.
+    * Click on a diagonal empty square to move the selected piece.
+    * Jump over the opponent's pieces to capture them.
 
     For more detailed rules, refer to the 'Game Rules' section."""
         help_text.insert(tkinter.END, instructions)
