@@ -4,7 +4,7 @@ import random  # for random moves
 import datetime  # to display date and time
 
 
-class AIPlayer():
+class AIPlayer:
     def __init__(self, game, difficulty):
         self.game = game
         self.difficulty = difficulty
@@ -132,7 +132,7 @@ class AIPlayer():
         return v
 
 
-class AIGameState():
+class AIGameState:
     def __init__(self, game):
         self.board = copy.deepcopy(game.getBoard())
 
