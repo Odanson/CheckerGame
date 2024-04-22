@@ -11,6 +11,7 @@ class AIPlayer:
         self.game = game
         self.difficulty = difficulty
 
+    #
     def getNextMove(self):
         if self.difficulty == 2:
             return self.getNextMoveEasy()
@@ -800,7 +801,7 @@ class CheckerGame:
             return (not self.playerCanContinue()) and (not self.opponentCanContinue())
 
     def shutdown(self):
-        # Add logic to close the GUI and any other resources
+        # Logic to close the GUI
         try:
             # Attempt to close the Tkinter root window
             self.root.quit()  # This stops the mainloop
@@ -821,7 +822,7 @@ class CheckerGame:
         if playerNum > opponentNum:
             print("Player won by {0:d} checkers! Congratulation!".format(playerNum - opponentNum))
         elif playerNum < opponentNum:
-            print("Computer won by {0:d} checkers! Try again!".format(opponentNum - playerNum))
+            print("AI won by {0:d} checkers! Try again!".format(opponentNum - playerNum))
         else:
             print("It is a draw! Try again!")
 
