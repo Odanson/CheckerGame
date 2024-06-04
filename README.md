@@ -1,8 +1,8 @@
 # Mini-Checkers Game
 ## Description
-This game is a modified version of the traditional 8 x 8 checkers game. The rules are similar to the original game, except a few differences. Below is a summary of the game rules.
-1. The game is played on a 6 x 6 checkers board.
-2. Each player starts out with six pieces.
+Below is a summary of the game rules.
+1. The game is played on a 8 x 8 checkers board.
+2. Each player starts out with eight pieces.
 3. At the start of the game, the human player can choose to move first or second.
 4. Each player takes turn to make a move.
 5. There are two types of moves: regular move and capture move. 
@@ -14,7 +14,7 @@ This game is a modified version of the traditional 8 x 8 checkers game. The rule
 
 
 ## Compilation and Run
-This Mini-Checkers game is written in Python 3. 
+This Checkers game is written in Python 3. 
 
 For the graphical user interface, it uses the Tkinter library, which is a built-in library that comes with Python 3. So you should not need to install additional packages to run the program.
 
@@ -82,6 +82,5 @@ Note that weights in the evaluation function are lower than the weights in the u
 
 ### Levels of difficulty
 Three levels of difficulty are implemented in this game.
-1. Easy: The AI player simply makes a random choice among all the available legal moves.
-2. Medium: The AI player uses Alpha Beta search with a uniform search depth limit of 5.
-3. Hard: The AI player uses Alpha Beta search with a dynamic search depth limit. The search depth is around 14 – 20. 
+1. Easy: The AI player uses Alpha Beta search with a uniform search depth limit of 3.
+2. Hard: The AI player uses Alpha Beta search with a dynamic search depth limit. The search depth is around 14 – 20.
